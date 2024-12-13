@@ -4,6 +4,8 @@ from discord import app_commands
 from environs import Env
 import uwuify
 
+import asyncio
+
 env = Env()
 env.read_env()
 
@@ -19,9 +21,15 @@ class UwuClient(discord.Client):
     async def setup_hook(self):
         await self.tree.sync()
 
-    async def UwUify(self, message):
-        embed = discord.Embed(title=f'<@{message.author.id}>', description = uwuify.uwu(message.content))
-        await message.reply(embed=embed)
+    async def UwUifyMessage(self, message):
+        attachmentURLs = [atch.url for atch in message.attachments]
+        mainEmbed = discord.Embed(description = f'{message.author.mention}\n{uwuify.uwu(message.content)}')
+        mainEmbed.set_thumbnail(url=message.author.display_avatar.url)
+        embeds = [discord.Embed().set_image(url=atchurl) for atchurl in attachmentURLs]
+        embeds.insert(0,mainEmbed)
+
+        await message.reply(embeds=embeds)
+        await asyncio.sleep(1)
         await message.delete()
 		
     async def on_message(self, message):
@@ -33,31 +41,40 @@ class UwuClient(discord.Client):
         if roles and channels: # both retrictions active
             if msgChannel in channels and bool(set(userRoles) & set(roles)):
                 # DO THE THING
-                uwuify(message)
+                await self.UwUifyMessage(message)
         elif roles: # only role restriction
              if bool(set(userRoles) & set(roles)):
-                  uwuify(message)
+                await self.UwUifyMessage(message)
         elif channels: #only channel restriction
              if msgChannel in channels:
-                  uwuify(message)
+                await self.UwUifyMessage(message)
 
 intents = discord.Intents.default()
+intents.members = True
+intents.message_content = True
 client = UwuClient(intents=intents)
-
 
 def refresh():
     global roles
     global channels
     with open(env("ROLES")) as f:
-        roles = [int(line.split(',')) for line in f]
+        roles = []
+        fcontent = f.read()
+        if fcontent:
+            roles = [int(x) for x in fcontent.split(',')]
     with open(env("CHANNELS")) as f:
-        channels = [int(line.split(',')) for line in f]
+        channels = []
+        fcontent = f.read()
+        if fcontent:
+            channels = [int(x) for x in fcontent.split(',')]
+    
 
 refresh()
 
-@client.tree.command(name='Update_Config')
+@client.tree.command(name='update_config')
 async def updateConfig(interaction: discord.Interaction):
-	refresh()
+    refresh()
+    await interaction.response.send_message(content="Configuration Refreshed", ephemeral=True)
 
 @client.event
 async def on_ready():
@@ -66,7 +83,7 @@ async def on_ready():
 
 def main():
 	try:
-		client.run(env("DISCORD_TOKEN"))
+		client.run(env("TOKEN"))
 	except KeyboardInterrupt:
 		pass
 if __name__ == '__main__':
