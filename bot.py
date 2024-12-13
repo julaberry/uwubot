@@ -2,8 +2,6 @@ import discord
 from discord.ext import tasks, commands
 from discord import app_commands
 from environs import Env
-import uwuify
-
 import asyncio
 
 env = Env()
@@ -11,6 +9,44 @@ env.read_env()
 
 roles = []
 channels = []
+
+# Thanks to print3d_pilot for the code
+#Generates misery
+def generateUwU(input_text):
+    # the length of the input text
+    length = len(input_text)
+    # variable declaration for the output text
+    output_text = ''
+    # check the cases for every individual character
+    for i in range(length):
+        # initialize the variables
+        current_char = input_text[i]
+        previous_char = '&# 092;&# 048;'
+        # assign the value of previous_char
+        if i > 0:
+            previous_char = input_text[i - 1]
+            # change 'L' and 'R' to 'W'
+        if current_char == 'L' or current_char == 'R':
+            output_text += 'W'
+        # change 'l' and 'r' to 'w'
+        elif current_char == 'l' or current_char == 'r':
+            output_text += 'w'
+        # if the current character is 'o' or 'O'
+        # also check the previous charatcer
+        elif current_char == 'O' or current_char == 'o':
+            if previous_char == 'N' or previous_char == 'n' or previous_char == 'M' or previous_char == 'm':
+                output_text += "yo"
+            else:
+                output_text += current_char
+                # if no case match, write it as it is
+        else:
+            output_text += current_char
+    output_text = output_text.replace('th', 'ff')
+    output_text = output_text.replace('Th', 'Ff')
+    output_text = output_text.replace('tH', 'fF')
+    output_text = output_text.replace('TH', 'FF')
+    print (output_text)
+    return output_text
 
 class UwuClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
@@ -23,7 +59,7 @@ class UwuClient(discord.Client):
 
     async def UwUifyMessage(self, message):
         attachmentURLs = [atch.url for atch in message.attachments]
-        mainEmbed = discord.Embed(description = f'{message.author.mention}\n{uwuify.uwu(message.content)}')
+        mainEmbed = discord.Embed(description = f'{message.author.mention}\n{generateUwU(message.content)}')
         mainEmbed.set_thumbnail(url=message.author.display_avatar.url)
         embeds = [discord.Embed().set_image(url=atchurl) for atchurl in attachmentURLs]
         embeds.insert(0,mainEmbed)
