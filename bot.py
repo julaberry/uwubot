@@ -45,8 +45,7 @@ def generateUwU(input_text):
     output_text = output_text.replace('Th', 'Ff')
     output_text = output_text.replace('tH', 'fF')
     output_text = output_text.replace('TH', 'FF')
-    print (output_text)
-    return output_text
+    return output_text + " :3"
 
 class UwuClient(discord.Client):
     def __init__(self, *, intents: discord.Intents):
